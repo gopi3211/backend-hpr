@@ -6,19 +6,19 @@ const AboutUsSubsectionModel = {
     return rows;
   },
 
-  create: async (heading, description, imageBlob) => {
+  create: async (heading, description, imagePath) => {
     const [result] = await db.query(
-      "INSERT INTO about_us_sections (heading, description, image_blob) VALUES (?, ?, ?)",
-      [heading, description, imageBlob]
+      "INSERT INTO about_us_sections (heading, description, image_path) VALUES (?, ?, ?)",
+      [heading, description, imagePath]
     );
     return result.insertId;
   },
 
-  update: async (id, heading, description, imageBlob) => {
-    if (imageBlob) {
+  update: async (id, heading, description, imagePath) => {
+    if (imagePath) {
       return db.query(
-        "UPDATE about_us_sections SET heading = ?, description = ?, image_blob = ? WHERE id = ?",
-        [heading, description, imageBlob, id]
+        "UPDATE about_us_sections SET heading = ?, description = ?, image_path = ? WHERE id = ?",
+        [heading, description, imagePath, id]
       );
     } else {
       return db.query(

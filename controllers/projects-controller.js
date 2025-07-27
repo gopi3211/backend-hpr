@@ -2,74 +2,64 @@ const {
   getAllProjects,
   addProject,
   updateProject,
-  deleteProject,
-} = require('../models/projects-model');
+  deleteProject
+} = require("../models/projects-model");
 
-console.log('[CONTROLLER] projects-controller.js loaded');
-
+// ✅ Fetch all projects
 const fetchProjects = async (req, res) => {
   try {
-    console.log('[CONTROLLER] fetchProjects() called');
-    const rawProjects = await getAllProjects();
-
-    const projects = rawProjects.map((project) => {
-      return {
-        ...project,
-        image: project.image ? Buffer.from(project.image).toString('base64') : '',
-      };
-    });
-
-    res.status(200).json({ success: true, data: projects });
-  } catch (err) {
-    console.error('[CONTROLLER] Failed to fetch projects:', err);
-    res.status(500).json({ success: false, message: 'Failed to fetch projects' });
+    const data = await getAllProjects();
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("[CONTROLLER] Failed to fetch projects:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch projects" });
   }
 };
 
+// ✅ Create a new project
 const createProject = async (req, res) => {
+  const { title, description } = req.body;
+  const imageFilename = req.file ? req.file.filename : null;
+
+  console.log("[CREATE] Received:", {
+    title,
+    description,
+    fileExists: !!imageFilename
+  });
+
   try {
-    const { title, description } = req.body;
-    const image = req.file?.buffer;
-
-    console.log('[CREATE] Received:', { title, description, fileExists: !!req.file });
-
-    if (!title || !description || !image) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
-    }
-
-    await addProject({ title, description, image });
-    res.status(201).json({ success: true, message: 'Project created successfully' });
-  } catch (err) {
-    console.error('[CONTROLLER] Failed to create project:', err);
-    res.status(500).json({ success: false, message: 'Failed to create project' });
+    const result = await addProject(title, description, imageFilename);
+    res.json({ success: true, message: "Project created successfully", id: result.insertId });
+  } catch (error) {
+    console.error("[CONTROLLER] Failed to create project:", error);
+    res.status(500).json({ success: false, message: "Failed to create project" });
   }
 };
 
+// ✅ Edit project
 const editProject = async (req, res) => {
+  const { id } = req.params;
+  const { title, description } = req.body;
+  const imageFilename = req.file ? req.file.filename : null;
+
   try {
-    const projectId = req.params.id;
-    const { title, description } = req.body;
-    const image = req.file ? req.file.buffer : null;
-
-    const project = { title, description, image };
-    await updateProject(projectId, project);
-
-    res.status(200).json({ success: true, message: 'Project updated successfully' });
-  } catch (err) {
-    console.error('[CONTROLLER] Failed to update project:', err);
-    res.status(500).json({ success: false, message: 'Failed to update project' });
+    await updateProject(id, title, description, imageFilename);
+    res.json({ success: true, message: "Project updated successfully" });
+  } catch (error) {
+    console.error("[CONTROLLER] Failed to update project:", error);
+    res.status(500).json({ success: false, message: "Failed to update project" });
   }
 };
 
+// ✅ Delete project
 const removeProject = async (req, res) => {
+  const { id } = req.params;
   try {
-    const projectId = req.params.id;
-    await deleteProject(projectId);
-
-    res.status(200).json({ success: true, message: 'Project deleted successfully' });
-  } catch (err) {
-    console.error('[CONTROLLER] Failed to delete project:', err);
-    res.status(500).json({ success: false, message: 'Failed to delete project' });
+    await deleteProject(id);
+    res.json({ success: true, message: "Project deleted successfully" });
+  } catch (error) {
+    console.error("[CONTROLLER] Failed to delete project:", error);
+    res.status(500).json({ success: false, message: "Failed to delete project" });
   }
 };
 

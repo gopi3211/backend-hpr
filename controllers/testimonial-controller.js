@@ -3,11 +3,17 @@ const testimonialModel = require('../models/testimonial-model');
 const getAllTestimonials = async (req, res) => {
   try {
     const data = await testimonialModel.getAll();
-    const base64Data = data.map(item => ({
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+    const formatted = data.map(item => ({
       ...item,
-      image: item.image?.toString('base64')
+      image_url: item.image
+        ? `${baseUrl}/uploads/testimonials/${item.image}`
+        : null
     }));
-    res.json({ success: true, data: base64Data });
+
+    res.json({ success: true, data: formatted });
   } catch (err) {
     console.error('Error fetching testimonials:', err);
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -17,8 +23,8 @@ const getAllTestimonials = async (req, res) => {
 const createTestimonial = async (req, res) => {
   try {
     const { name, message } = req.body;
-    const imageBuffer = req.file?.buffer || null;
-    await testimonialModel.create(name, message, imageBuffer);
+    const imageName = req.file?.filename || null;
+    await testimonialModel.create(name, message, imageName);
     res.json({ success: true, message: 'Testimonial added successfully' });
   } catch (err) {
     console.error('Error creating testimonial:', err);
@@ -30,8 +36,8 @@ const updateTestimonial = async (req, res) => {
   try {
     const { name, message } = req.body;
     const { id } = req.params;
-    const imageBuffer = req.file?.buffer || null;
-    await testimonialModel.update(id, name, message, imageBuffer);
+    const imageName = req.file?.filename || null;
+    await testimonialModel.update(id, name, message, imageName);
     res.json({ success: true, message: 'Testimonial updated successfully' });
   } catch (err) {
     console.error('Error updating testimonial:', err);

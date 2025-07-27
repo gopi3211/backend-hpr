@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/upload-middleware");
+
 const {
   getAboutUs,
   createAboutUs,
@@ -8,9 +8,11 @@ const {
   deleteAboutUs,
 } = require("../controllers/about-us-controller");
 
+const uploadAboutUs = require("../middlewares/upload-aboutus");
+
 router.get("/about-us", getAboutUs);
-router.post("/about-us", upload.single("image"), createAboutUs);
-router.put("/about-us/:id", upload.single("image"), updateAboutUs);
+router.post("/about-us", uploadAboutUs.single("image"), createAboutUs);
+router.put("/about-us/:id", uploadAboutUs.single("image"), updateAboutUs);
 router.delete("/about-us/:id", deleteAboutUs);
 
 module.exports = router;

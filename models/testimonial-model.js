@@ -6,19 +6,19 @@ const testimonialModel = {
     return rows;
   },
 
-  create: async (name, message, imageBuffer) => {
+  create: async (name, message, imageName) => {
     const [result] = await db.execute(
       'INSERT INTO home_testimonials (name, message, image) VALUES (?, ?, ?)',
-      [name, message, imageBuffer]
+      [name, message, imageName]
     );
     return result;
   },
 
-  update: async (id, name, message, imageBuffer) => {
-    if (imageBuffer) {
+  update: async (id, name, message, imageName) => {
+    if (imageName) {
       return db.execute(
         'UPDATE home_testimonials SET name = ?, message = ?, image = ? WHERE id = ?',
-        [name, message, imageBuffer, id]
+        [name, message, imageName, id]
       );
     }
     return db.execute(

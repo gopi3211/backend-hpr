@@ -13,11 +13,22 @@ const {
 console.log('[ROUTES] hero-carousel-routes.js loaded');
 
 // ====================================
-// Setup Multer Storage for Uploads
+// Setup Multer Disk Storage for Image Uploads
 // ====================================
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
+const path = require('path');
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/images'); // ✅ Save to this folder
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = `${Date.now()}-${file.originalname}`; // ✅ Unique filename
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
 
 // ====================================
 // Routes
@@ -33,7 +44,7 @@ router.get('/', (req, res) => {
 // @POST   /api/hero-carousel
 // @desc   Add new slide
 router.post('/', upload.single('image'), (req, res) => {
-console.log('[ROUTE] POST /api/v1/hero-carousel called');
+  console.log('[ROUTE] POST /api/v1/hero-carousel called');
   createHeroSlide(req, res);
 });
 

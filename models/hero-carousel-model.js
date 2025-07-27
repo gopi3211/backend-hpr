@@ -20,6 +20,7 @@ const getAllSlides = async () => {
 const addSlide = async (data) => {
   console.log('[MODEL] addSlide called with:', data);
 
+  // ✅ Store filename, not BLOB
   const [result] = await db.execute(
     'INSERT INTO hero_carousel (image, heading, subheading) VALUES (?, ?, ?)',
     [data.image, data.heading, data.subheading]
@@ -35,6 +36,7 @@ const addSlide = async (data) => {
 const updateSlide = async (id, data) => {
   console.log(`[MODEL] updateSlide called for ID ${id} with:`, data);
 
+  // ✅ Save filename string (not buffer)
   const [result] = await db.execute(
     'UPDATE hero_carousel SET image = ?, heading = ?, subheading = ? WHERE id = ?',
     [data.image, data.heading, data.subheading, id]

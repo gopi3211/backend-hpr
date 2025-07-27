@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
+const upload = require('../middlewares/testimonial-upload'); // ✅ use correct one
+
 const {
   getAllTestimonials,
   createTestimonial,
   updateTestimonial,
-  deleteTestimonial
+  deleteTestimonial,
 } = require('../controllers/testimonial-controller');
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 router.get('/', getAllTestimonials);
 router.post('/', upload.single('image'), createTestimonial);

@@ -1,3 +1,4 @@
+const path = require('path');
 const {
   getAllSlides,
   addSlide,
@@ -5,7 +6,6 @@ const {
   deleteSlide,
 } = require('../models/hero-carousel-model');
 
-// [LOG] Hero Carousel Controller loaded
 console.log('[CONTROLLER] hero-carousel-controller.js loaded');
 
 // ===============================
@@ -16,7 +16,15 @@ const fetchHeroSlides = async (req, res) => {
 
   try {
     const results = await getAllSlides();
-    res.status(200).json({ success: true, data: results });
+
+const slidesWithUrls = results.map(slide => ({
+  ...slide,
+  image: slide.image, // only filename
+}));
+
+
+    console.log('[DEBUG] Returning slides:', slidesWithUrls);
+    res.status(200).json({ success: true, data: slidesWithUrls });
   } catch (err) {
     console.error('[CONTROLLER] Error fetching hero slides:', err);
     res.status(500).json({ success: false, message: 'Failed to fetch slides' });
@@ -35,14 +43,13 @@ const createHeroSlide = async (req, res) => {
   const imageFile = req.file;
 
   if (!heading || !subheading || !imageFile) {
-    console.warn('[CONTROLLER] Missing fields in request body');
     return res.status(400).json({ success: false, message: 'All fields are required' });
   }
 
   const newSlide = {
     heading,
     subheading,
-    image: imageFile.buffer,
+    image: imageFile.filename,
   };
 
   try {
@@ -61,18 +68,17 @@ const updateHeroSlide = async (req, res) => {
   console.log('[CONTROLLER] updateHeroSlide() called');
 
   const slideId = req.params.id;
-  const { heading, subheading } = req.body;
+  const { heading, subheading, oldImage } = req.body;
   const imageFile = req.file;
 
   if (!heading || !subheading) {
-    console.warn('[CONTROLLER] Missing fields for update');
     return res.status(400).json({ success: false, message: 'Heading and Subheading are required' });
   }
 
   const updatedData = {
     heading,
     subheading,
-    image: imageFile ? imageFile.buffer : req.body.oldImage,
+    image: imageFile ? imageFile.filename : oldImage,
   };
 
   try {

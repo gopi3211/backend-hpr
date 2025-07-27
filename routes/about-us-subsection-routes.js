@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/upload-middleware");
+
+// ✅ Use correct upload middleware for about-us-subsections
+const upload = require("../middlewares/upload-aboutus-subsection"); 
+
 const {
   getSubsections,
   createSubsection,
@@ -8,6 +11,7 @@ const {
   deleteSubsection,
 } = require("../controllers/about-us-subsection-controller");
 
+// Routes
 router.get("/about-us/sections", getSubsections);
 router.post("/about-us/sections", upload.single("image"), createSubsection);
 router.put("/about-us/sections/:id", upload.single("image"), updateSubsection);

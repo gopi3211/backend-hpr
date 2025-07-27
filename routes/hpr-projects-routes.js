@@ -1,14 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const HprProjectsController = require("../controllers/hpr-projects-controller");
-const upload = require("../middlewares/upload-middleware");
+const upload = require("../middlewares/upload-hpr-projects");
 const authMiddleware = require("../middlewares/auth-middleware");
 
 // ---------- PROJECTS ----------
 router.post(
   "/hpr-projects",
   authMiddleware,
-  upload.fields([{ name: "logo" }, { name: "banner" }]),
+  upload.fields([{ name: "logo"   }, { name: "banner" }]),
   HprProjectsController.createProject
 );
 router.get("/hpr-projects", HprProjectsController.getAllProjects);
@@ -25,6 +25,13 @@ router.delete("/hpr-projects/:id", authMiddleware, HprProjectsController.deleteP
 router.get("/hpr-projects/names", HprProjectsController.getProjectNames);
 router.get("/hpr-projects/gallery-category/:category", HprProjectsController.getGalleryByCategory);
 
+
+
+
+
+
+
+
 // ---------- HOME ----------
 router.post(
   "/hpr-projects/home",
@@ -40,6 +47,23 @@ router.put(
   HprProjectsController.updateHome
 );
 router.delete("/hpr-projects/home/:id", authMiddleware, HprProjectsController.deleteHome);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ---------- GALLERY ----------
 router.post(

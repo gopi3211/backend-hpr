@@ -5,7 +5,7 @@ const FooterModel = {
   getLatest: async () => {
     console.log("[MODEL] getLatest called");
     const [rows] = await db.query("SELECT * FROM footer ORDER BY id DESC LIMIT 1");
-    return rows; // ✅ Always returns latest footer
+    return rows;
   },
 
   create: async (data) => {
@@ -19,7 +19,7 @@ const FooterModel = {
       facebook = "",
       instagram = "",
       linkedin = "",
-      logo = null
+      logo = null // ✅ logo = filename (not BLOB)
     } = data;
 
     const [result] = await db.execute(
@@ -44,7 +44,7 @@ const FooterModel = {
       facebook = "",
       instagram = "",
       linkedin = "",
-      logo = null
+      logo = null // ✅ updated logo filename (if changed)
     } = data;
 
     const [result] = await db.execute(

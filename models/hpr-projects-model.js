@@ -4,7 +4,8 @@ const HprProjectsModel = {
   // -------------------- PROJECTS MAIN --------------------
   createProject: async (name, category, shortDesc, logo, banner) => {
     const [result] = await db.execute(
-      `INSERT INTO hpr_projects (name, category, short_desc, logo_blob, banner_blob) VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO hpr_projects (name, category, short_desc, logo_filename, banner_filename)
+       VALUES (?, ?, ?, ?, ?)`,
       [name, category, shortDesc, logo, banner]
     );
     return result.insertId;
@@ -12,17 +13,34 @@ const HprProjectsModel = {
 
   getAllProjects: async () => {
     const [rows] = await db.execute(`SELECT * FROM hpr_projects ORDER BY id DESC`);
-    return rows;
+    return rows.map((row) => ({
+      ...row,
+      logo_url: row.logo_filename
+        ? `${process.env.SERVER_URL}/uploads/project-images/${row.logo_filename}`
+        : null,
+      banner_url: row.banner_filename
+        ? `${process.env.SERVER_URL}/uploads/project-images/${row.banner_filename}`
+        : null,
+    }));
   },
 
   getProjectById: async (id) => {
     const [rows] = await db.execute(`SELECT * FROM hpr_projects WHERE id = ?`, [id]);
-    return rows[0];
+    const row = rows[0];
+    return {
+      ...row,
+      logo_url: row?.logo_filename
+        ? `${process.env.SERVER_URL}/uploads/project-images/${row.logo_filename}`
+        : null,
+      banner_url: row?.banner_filename
+        ? `${process.env.SERVER_URL}/uploads/project-images/${row.banner_filename}`
+        : null,
+    };
   },
 
   updateProject: async (id, name, category, shortDesc, logo, banner) => {
     return db.execute(
-      `UPDATE hpr_projects SET name = ?, category = ?, short_desc = ?, logo_blob = ?, banner_blob = ? WHERE id = ?`,
+      `UPDATE hpr_projects SET name = ?, category = ?, short_desc = ?, logo_filename = ?, banner_filename = ? WHERE id = ?`,
       [name, category, shortDesc, logo, banner, id]
     );
   },
@@ -31,118 +49,198 @@ const HprProjectsModel = {
     return db.execute(`DELETE FROM hpr_projects WHERE id = ?`, [id]);
   },
 
+
+
+
+
+
+
+
+
+
   // -------------------- UTILITIES --------------------
   getProjectNames: async () => {
     const [rows] = await db.execute(`SELECT id, name FROM hpr_projects`);
     return rows;
   },
 
-  getGalleryByCategory: async (category) => {
-    const [rows] = await db.execute(
-      `SELECT g.* FROM hpr_projects_gallery g JOIN hpr_projects p ON g.project_id = p.id WHERE p.category = ? ORDER BY g.work_date DESC`,
-      [category]
-    );
-    return rows;
-  },
+ getGalleryByCategory: async (category) => {
+  const [rows] = await db.execute(
+    `SELECT g.*, p.name AS project_name FROM hpr_projects_gallery g 
+     JOIN hpr_projects p ON g.project_id = p.id 
+     WHERE p.category = ? ORDER BY g.work_date DESC`,
+    [category]
+  );
+
+  return rows.map(item => ({
+    ...item,
+    image_url: item.image_filename
+      ? `${process.env.SERVER_URL}/uploads/project-images/${item.image_filename}`
+      : null
+  }));
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // -------------------- HOME --------------------
-  createHome: async (projectId, title, description, brochure, image) => {
-    const [result] = await db.execute(
-      `INSERT INTO hpr_projects_home (project_id, title, description, brochure_blob, image_blob) VALUES (?, ?, ?, ?, ?)`,
-      [projectId, title, description, brochure, image]
-    );
-    return result.insertId;
-  },
+createHome: async (projectId, title, description, brochure, image) => {
+  const [result] = await db.execute(
+    `INSERT INTO hpr_projects_home (project_id, title, description, brochure_filename, image_filename)
+     VALUES (?, ?, ?, ?, ?)`,
+    [projectId, title, description, brochure, image]
+  );
+  return result.insertId;
+},
 
-  getHomeByProjectId: async (projectId) => {
-    const [rows] = await db.execute(`SELECT * FROM hpr_projects_home WHERE project_id = ?`, [projectId]);
-    return rows[0];
-  },
+getHomeByProjectId: async (projectId) => {
+  const [rows] = await db.execute(
+    `SELECT * FROM hpr_projects_home WHERE project_id = ?`,
+    [projectId]
+  );
+  const row = rows[0];
+  return {
+    ...row,
+    brochure_url: row?.brochure_filename
+      ? `${process.env.SERVER_URL}/uploads/project-images/${row.brochure_filename}`
+      : null,
+    image_url: row?.image_filename
+      ? `${process.env.SERVER_URL}/uploads/project-images/${row.image_filename}`
+      : null
+  };
+},
 
-  updateHome: async (id, title, description, brochure, image) => {
-    return db.execute(
-      `UPDATE hpr_projects_home SET title = ?, description = ?, brochure_blob = ?, image_blob = ? WHERE id = ?`,
-      [title, description, brochure, image, id]
-    );
-  },
+updateHome: async (id, title, description, brochure, image) => {
+  return db.execute(
+    `UPDATE hpr_projects_home SET title = ?, description = ?, brochure_filename = ?, image_filename = ? WHERE id = ?`,
+    [title, description, brochure, image, id]
+  );
+},
 
-  deleteHome: async (id) => {
-    return db.execute(`DELETE FROM hpr_projects_home WHERE id = ?`, [id]);
-  },
+deleteHome: async (id) => {
+  return db.execute(`DELETE FROM hpr_projects_home WHERE id = ?`, [id]);
+},
+
+
+
+
+
+
+
+
+
+
+
 
 // -------------------- GALLERY --------------------
-addGalleryImage: async (projectId, workDate, description, image, category) => {
+addGalleryImage: async (projectId, workDate, description, imageFilename, category) => {
   console.log("⏺️ INSERTING GALLERY:");
   console.log("projectId:", projectId);
   console.log("workDate:", workDate);
   console.log("description:", description);
-  console.log("image present:", !!image);
+  console.log("image_filename:", imageFilename);
   console.log("category:", category);
 
   return db.execute(
-    `INSERT INTO hpr_projects_gallery (project_id, work_date, description, image_blob, category)
+    `INSERT INTO hpr_projects_gallery (project_id, work_date, description, image_filename, category)
      VALUES (?, ?, ?, ?, ?)`,
-    [projectId, workDate, description, image || null, category || null]
+    [projectId, workDate, description, imageFilename, category]
   );
 },
-
 
 getGalleryByProjectId: async (projectId) => {
   const [rows] = await db.execute(
     `SELECT * FROM hpr_projects_gallery WHERE project_id = ? ORDER BY work_date DESC`,
     [projectId]
   );
-  return rows;
+
+  return rows.map(item => ({
+    ...item,
+    image_url: item.image_filename
+      ? `${process.env.SERVER_URL}/uploads/project-images/${item.image_filename}`
+      : null,
+  }));
 },
 
 deleteGalleryImage: async (id) => {
   return db.execute(`DELETE FROM hpr_projects_gallery WHERE id = ?`, [id]);
 },
 
+
+
+
+
+
+
+
+
+
+
+
+
+
   // ---// ----------------- PLAN --------------------
-addPlan: async (projectId, description, plan) => {
+addPlan: async (projectId, description, planFilename) => {
   console.log("⏺️ INSERTING PLAN:");
   console.log("projectId:", projectId);
   console.log("description:", description);
-  console.log("plan present:", !!plan);
+  console.log("plan_filename:", planFilename);
 
   return db.execute(
-    `INSERT INTO hpr_projects_plan (project_id, description, plan_blob) VALUES (?, ?, ?)`,
-    [
-      projectId || null,
-      description || null,
-      plan ?? null  // ✅ Prevent undefined binding error
-    ]
+    `INSERT INTO hpr_projects_plan (project_id, description, plan_filename) VALUES (?, ?, ?)`,
+    [projectId || null, description || null, planFilename || null]
   );
 },
 
 getPlanByProjectId: async (projectId) => {
   const [rows] = await db.execute(
-    `SELECT * FROM hpr_projects_plan WHERE project_id = ?`,
+    `SELECT * FROM hpr_projects_plan WHERE project_id = ? AND plan_filename IS NOT NULL ORDER BY id DESC LIMIT 1`,
     [projectId || null]
   );
-  return rows[0];
+
+  const plan = rows[0] || null;
+
+  if (plan?.plan_filename) {
+    plan.plan_url = `${process.env.SERVER_URL}/uploads/project-images/${plan.plan_filename}`;
+  }
+
+  return plan;
 },
 
-updatePlan: async (id, description, plan) => {
-  console.log("🔄 UPDATING PLAN:", { id, description, hasPlan: !!plan });
 
-  return db.execute(
-    `UPDATE hpr_projects_plan SET description = ?, plan_blob = ? WHERE id = ?`,
-    [
-      description || null,
-      plan ?? null,  // ✅ prevent undefined
-      id || null
-    ]
-  );
+deletePlan: async (id) => {
+  return db.execute(`DELETE FROM hpr_projects_plan WHERE id = ?`, [id]);
 },
+
 
 deletePlan: async (id) => {
   console.log("🗑️ Deleting PLAN ID:", id);
   return db.execute(`DELETE FROM hpr_projects_plan WHERE id = ?`, [id || null]);
 },
 
-  // -------------------- LOCATION --------------------
+ 
+
+
+
+
+
+// -------------------- LOCATION --------------------
+  
+  
+  
+  
+  
+  
   addLocation: async (projectId, iframe) => {
     return db.execute(
       `INSERT INTO hpr_projects_location (project_id, iframe_link) VALUES (?, ?)`,
@@ -163,6 +261,9 @@ deletePlan: async (id) => {
   deleteLocation: async (id) => {
     return db.execute(`DELETE FROM hpr_projects_location WHERE id = ?`, [id]);
   },
+
+
+
 
 // -------------------- AMENITIES --------------------
 addAmenities: async (projectId, infrastructure, features) => {

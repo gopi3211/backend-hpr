@@ -2,23 +2,23 @@ const db = require("../config/db");
 
 const AboutUsModel = {
   getAll: async () => {
-    const [rows] = await db.query("SELECT * FROM about_us");
+    const [rows] = await db.query("SELECT * FROM about_us ORDER BY id ASC");
     return rows;
   },
 
-  create: async (heading, description, imageBlob) => {
+  create: async (heading, description, imageFilename) => {
     const [result] = await db.query(
-      "INSERT INTO about_us (heading, description, image_blob) VALUES (?, ?, ?)",
-      [heading, description, imageBlob]
+      "INSERT INTO about_us (heading, description, image_filename) VALUES (?, ?, ?)",
+      [heading, description, imageFilename]
     );
     return result.insertId;
   },
 
-  update: async (id, heading, description, imageBlob) => {
-    if (imageBlob) {
+  update: async (id, heading, description, imageFilename) => {
+    if (imageFilename) {
       return db.query(
-        "UPDATE about_us SET heading = ?, description = ?, image_blob = ? WHERE id = ?",
-        [heading, description, imageBlob, id]
+        "UPDATE about_us SET heading = ?, description = ?, image_filename = ? WHERE id = ?",
+        [heading, description, imageFilename, id]
       );
     } else {
       return db.query(
