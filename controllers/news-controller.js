@@ -3,10 +3,9 @@ const NewsModel = require("../models/news-model");
 const NewsController = {
   // -------------------- NEWS CRUD --------------------
 
-  // Create a news item with optional images
   async createNews(req, res) {
     try {
-      const { title, short_description, full_description, posted_date } = req.body;
+      const { title, short_description, full_description, posted_date, image_urls = [] } = req.body;
 
       console.log("[CONTROLLER] createNews called");
 
@@ -17,11 +16,8 @@ const NewsController = {
         posted_date
       );
 
-      // Handle multiple images
-      if (req.files && req.files.images) {
-        for (const file of req.files.images) {
-          await NewsModel.addNewsImage(newsId, file.buffer);
-        }
+      for (const url of image_urls) {
+        await NewsModel.addNewsImage(newsId, url);
       }
 
       console.log(`[CONTROLLER] News created with ID: ${newsId}`);
@@ -32,21 +28,15 @@ const NewsController = {
     }
   },
 
-  // Get all news (for cards list)
   async getAllNews(req, res) {
     try {
       console.log("[CONTROLLER] getAllNews called");
 
       const newsList = await NewsModel.getAllNews();
 
-      // Attach first image for each news card (if exists)
       for (const news of newsList) {
         const images = await NewsModel.getImagesByNewsId(news.id);
-        if (images.length > 0) {
-          news.images = [images[0]]; // Only send preview image
-        } else {
-          news.images = [];
-        }
+        news.images = images.map((img) => ({ image_url: img.image_url }));
       }
 
       res.json({ data: newsList });
@@ -56,7 +46,6 @@ const NewsController = {
     }
   },
 
-  // Get full news by ID (modal)
   async getNewsById(req, res) {
     try {
       const id = req.params.id;
@@ -66,7 +55,7 @@ const NewsController = {
       if (!news) return res.status(404).json({ error: "News not found" });
 
       const images = await NewsModel.getImagesByNewsId(id);
-      news.images = images;
+      news.images = images.map((img) => ({ image_url: img.image_url }));
 
       res.json({ data: news });
     } catch (err) {
@@ -75,7 +64,6 @@ const NewsController = {
     }
   },
 
-  // Update a news item
   async updateNews(req, res) {
     try {
       const id = req.params.id;
@@ -98,7 +86,6 @@ const NewsController = {
     }
   },
 
-  // Delete a news item
   async deleteNews(req, res) {
     try {
       const id = req.params.id;
@@ -115,18 +102,17 @@ const NewsController = {
 
   // -------------------- BANNER --------------------
 
-  // Upload or replace the banner image
   async uploadBanner(req, res) {
     try {
       console.log("[CONTROLLER] uploadBanner called");
 
-      if (!req.files || !req.files.banner || req.files.banner.length === 0) {
-        return res.status(400).json({ error: "No banner file provided" });
+      const { banner_url } = req.body;
+
+      if (!banner_url) {
+        return res.status(400).json({ error: "Banner URL required" });
       }
 
-      const bannerFile = req.files.banner[0];
-
-      await NewsModel.setBannerImage(bannerFile.buffer);
+      await NewsModel.setBannerUrl(banner_url);
 
       res.status(200).json({ message: "Banner uploaded successfully" });
     } catch (err) {
@@ -135,17 +121,15 @@ const NewsController = {
     }
   },
 
-  // Get the current banner image
   async getBanner(req, res) {
     try {
       console.log("[CONTROLLER] getBanner called");
 
-      const banner = await NewsModel.getBannerImage();
+      const bannerUrl = await NewsModel.getBannerUrl();
 
-      if (!banner) return res.status(404).json({ error: "No banner found" });
+      if (!bannerUrl) return res.status(404).json({ error: "No banner found" });
 
-      res.set("Content-Type", "image/jpeg");
-      res.send(banner.image_blob);
+      res.json({ banner_url: bannerUrl });
     } catch (err) {
       console.error("Error fetching banner:", err);
       res.status(500).json({ error: "Failed to fetch banner" });

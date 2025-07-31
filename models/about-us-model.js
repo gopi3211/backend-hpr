@@ -6,19 +6,19 @@ const AboutUsModel = {
     return rows;
   },
 
-  create: async (heading, description, imageFilename) => {
+  create: async (heading, description, imageUrl) => {
     const [result] = await db.query(
-      "INSERT INTO about_us (heading, description, image_filename) VALUES (?, ?, ?)",
-      [heading, description, imageFilename]
+      "INSERT INTO about_us (heading, description, image_url) VALUES (?, ?, ?)",
+      [heading, description, imageUrl]
     );
     return result.insertId;
   },
 
-  update: async (id, heading, description, imageFilename) => {
-    if (imageFilename) {
+  update: async (id, heading, description, imageUrl) => {
+    if (imageUrl) {
       return db.query(
-        "UPDATE about_us SET heading = ?, description = ?, image_filename = ? WHERE id = ?",
-        [heading, description, imageFilename, id]
+        "UPDATE about_us SET heading = ?, description = ?, image_url = ? WHERE id = ?",
+        [heading, description, imageUrl, id]
       );
     } else {
       return db.query(

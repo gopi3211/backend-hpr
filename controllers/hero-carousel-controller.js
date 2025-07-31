@@ -1,4 +1,3 @@
-const path = require('path');
 const {
   getAllSlides,
   addSlide,
@@ -13,18 +12,9 @@ console.log('[CONTROLLER] hero-carousel-controller.js loaded');
 // ===============================
 const fetchHeroSlides = async (req, res) => {
   console.log('[CONTROLLER] fetchHeroSlides() called');
-
   try {
     const results = await getAllSlides();
-
-const slidesWithUrls = results.map(slide => ({
-  ...slide,
-  image: slide.image, // only filename
-}));
-
-
-    console.log('[DEBUG] Returning slides:', slidesWithUrls);
-    res.status(200).json({ success: true, data: slidesWithUrls });
+    res.status(200).json({ success: true, data: results });
   } catch (err) {
     console.error('[CONTROLLER] Error fetching hero slides:', err);
     res.status(500).json({ success: false, message: 'Failed to fetch slides' });
@@ -36,24 +26,14 @@ const slidesWithUrls = results.map(slide => ({
 // ===============================
 const createHeroSlide = async (req, res) => {
   console.log('[CONTROLLER] createHeroSlide() called');
-  console.log('[DEBUG] req.body:', req.body);
-  console.log('[DEBUG] req.file:', req.file);
+  const { heading, subheading, image } = req.body;
 
-  const { heading, subheading } = req.body;
-  const imageFile = req.file;
-
-  if (!heading || !subheading || !imageFile) {
+  if (!heading || !subheading || !image) {
     return res.status(400).json({ success: false, message: 'All fields are required' });
   }
 
-  const newSlide = {
-    heading,
-    subheading,
-    image: imageFile.filename,
-  };
-
   try {
-    await addSlide(newSlide);
+    await addSlide({ heading, subheading, image });
     res.status(201).json({ success: true, message: 'Slide added successfully' });
   } catch (err) {
     console.error('[CONTROLLER] Failed to add slide:', err);
@@ -68,21 +48,14 @@ const updateHeroSlide = async (req, res) => {
   console.log('[CONTROLLER] updateHeroSlide() called');
 
   const slideId = req.params.id;
-  const { heading, subheading, oldImage } = req.body;
-  const imageFile = req.file;
+  const { heading, subheading, image } = req.body;
 
-  if (!heading || !subheading) {
-    return res.status(400).json({ success: false, message: 'Heading and Subheading are required' });
+  if (!heading || !subheading || !image) {
+    return res.status(400).json({ success: false, message: 'All fields are required' });
   }
 
-  const updatedData = {
-    heading,
-    subheading,
-    image: imageFile ? imageFile.filename : oldImage,
-  };
-
   try {
-    await updateSlide(slideId, updatedData);
+    await updateSlide(slideId, { heading, subheading, image });
     res.status(200).json({ success: true, message: 'Slide updated successfully' });
   } catch (err) {
     console.error('[CONTROLLER] Failed to update slide:', err);

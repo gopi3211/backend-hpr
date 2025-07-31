@@ -4,17 +4,11 @@ const {
   updateValue,
   deleteValue
 } = require('../models/company-values-model');
-const path = require('path');
 
+// ✅ Fetch with image URL as-is
 const fetchValues = async (req, res) => {
   try {
-    const raw = await getAllValues();
-    const data = raw.map(val => ({
-      ...val,
-      image_url: val.image
-        ? `${process.env.SERVER_URL}/uploads/company-values/${val.image}`
-        : null
-    }));
+    const data = await getAllValues();
     res.status(200).json({ success: true, data });
   } catch (err) {
     console.error('[CompanyValues] Fetch error:', err);
@@ -22,10 +16,10 @@ const fetchValues = async (req, res) => {
   }
 };
 
+// ✅ Create value (image is now a full URL string)
 const createValue = async (req, res) => {
   try {
-    const { title, description } = req.body;
-    const image = req.file?.filename;
+    const { title, description, image } = req.body;
     if (!title || !description || !image) {
       return res.status(400).json({ success: false, message: 'All fields required' });
     }
@@ -37,10 +31,10 @@ const createValue = async (req, res) => {
   }
 };
 
+// ✅ Edit value
 const editValue = async (req, res) => {
   try {
-    const { title, description } = req.body;
-    const image = req.file?.filename || null;
+    const { title, description, image } = req.body;
     await updateValue(req.params.id, { title, description, image });
     res.status(200).json({ success: true });
   } catch (err) {
@@ -49,6 +43,7 @@ const editValue = async (req, res) => {
   }
 };
 
+// ✅ Delete
 const removeValue = async (req, res) => {
   try {
     await deleteValue(req.params.id);

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middlewares/upload-middleware');
+
 const {
   fetchProjects,
   createProject,
@@ -9,8 +9,8 @@ const {
 } = require('../controllers/projects-controller');
 
 router.get('/', fetchProjects);
-router.post('/', upload.single('image'), createProject);
-router.put('/:id', upload.single('image'), editProject);
+router.post('/', createProject);         // ❌ No multer
+router.put('/:id', editProject);         // ❌ No multer
 router.delete('/:id', removeProject);
 
 module.exports = router;

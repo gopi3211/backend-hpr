@@ -1,6 +1,4 @@
 const db = require('./db');
-
-// [LOG] Hero Carousel Model Loaded
 console.log('[MODEL] hero-carousel-model.js loaded');
 
 // ================================
@@ -8,7 +6,6 @@ console.log('[MODEL] hero-carousel-model.js loaded');
 // ================================
 const getAllSlides = async () => {
   console.log('[MODEL] getAllSlides called');
-
   const [rows] = await db.execute('SELECT * FROM hero_carousel ORDER BY id DESC');
   console.log('[MODEL] Slides fetched successfully');
   return rows;
@@ -19,13 +16,10 @@ const getAllSlides = async () => {
 // ================================
 const addSlide = async (data) => {
   console.log('[MODEL] addSlide called with:', data);
-
-  // ✅ Store filename, not BLOB
   const [result] = await db.execute(
     'INSERT INTO hero_carousel (image, heading, subheading) VALUES (?, ?, ?)',
     [data.image, data.heading, data.subheading]
   );
-
   console.log('[MODEL] Slide added with ID:', result.insertId);
   return result;
 };
@@ -35,13 +29,10 @@ const addSlide = async (data) => {
 // ================================
 const updateSlide = async (id, data) => {
   console.log(`[MODEL] updateSlide called for ID ${id} with:`, data);
-
-  // ✅ Save filename string (not buffer)
   const [result] = await db.execute(
     'UPDATE hero_carousel SET image = ?, heading = ?, subheading = ? WHERE id = ?',
     [data.image, data.heading, data.subheading, id]
   );
-
   console.log(`[MODEL] Slide updated for ID ${id}`);
   return result;
 };
@@ -51,12 +42,7 @@ const updateSlide = async (id, data) => {
 // ================================
 const deleteSlide = async (id) => {
   console.log(`[MODEL] deleteSlide called for ID ${id}`);
-
-  const [result] = await db.execute(
-    'DELETE FROM hero_carousel WHERE id = ?',
-    [id]
-  );
-
+  const [result] = await db.execute('DELETE FROM hero_carousel WHERE id = ?', [id]);
   console.log(`[MODEL] Slide deleted for ID ${id}`);
   return result;
 };

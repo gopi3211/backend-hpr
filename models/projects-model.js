@@ -7,19 +7,18 @@ const getAllProjects = async () => {
 };
 
 // ✅ Add a project
-const addProject = async (title, description, imageFilename) => {
-  console.log("[MODEL] addProject called");
+const addProject = async (title, description, imageUrl) => {
   const sql = "INSERT INTO home_projects (title, description, image) VALUES (?, ?, ?)";
-  const [result] = await pool.query(sql, [title, description, imageFilename]);
+  const [result] = await pool.query(sql, [title, description, imageUrl]);
   return result;
 };
 
 // ✅ Update project
-const updateProject = async (id, title, description, imageFilename) => {
+const updateProject = async (id, title, description, imageUrl) => {
   let sql, params;
-  if (imageFilename) {
+  if (imageUrl) {
     sql = "UPDATE home_projects SET title = ?, description = ?, image = ? WHERE id = ?";
-    params = [title, description, imageFilename, id];
+    params = [title, description, imageUrl, id];
   } else {
     sql = "UPDATE home_projects SET title = ?, description = ? WHERE id = ?";
     params = [title, description, id];

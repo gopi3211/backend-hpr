@@ -4,11 +4,8 @@ const HprProjectsController = {
   // -------------------- PROJECTS MAIN --------------------
   createProject: async (req, res) => {
     try {
-      const { name, category, short_desc } = req.body;
-      const logo = req.files?.logo?.[0]?.filename || null;
-      const banner = req.files?.banner?.[0]?.filename || null;
-
-      const id = await HprProjectsModel.createProject(name, category, short_desc, logo, banner);
+      const { name, category, short_desc, logo_url, banner_url } = req.body;
+      const id = await HprProjectsModel.createProject(name, category, short_desc, logo_url || null, banner_url || null);
       res.status(201).json({ id });
     } catch (err) {
       console.error("createProject error:", err);
@@ -38,11 +35,8 @@ const HprProjectsController = {
 
   updateProject: async (req, res) => {
     try {
-      const { name, category, short_desc } = req.body;
-      const logo = req.files?.logo?.[0]?.filename || null;
-      const banner = req.files?.banner?.[0]?.filename || null;
-
-      await HprProjectsModel.updateProject(req.params.id, name, category, short_desc, logo, banner);
+      const { name, category, short_desc, logo_url, banner_url } = req.body;
+      await HprProjectsModel.updateProject(req.params.id, name, category, short_desc, logo_url || null, banner_url || null);
       res.json({ success: true });
     } catch (err) {
       console.error("updateProject error:", err);
@@ -60,12 +54,6 @@ const HprProjectsController = {
     }
   },
 
-
-
-
-
-
-
   // -------------------- UTILITIES --------------------
   getProjectNames: async (req, res) => {
     try {
@@ -77,188 +65,146 @@ const HprProjectsController = {
     }
   },
 
-getGalleryByCategory: async (req, res) => {
-  try {
-    const data = await HprProjectsModel.getGalleryByCategory(req.params.category);
-    res.json(data);
-  } catch (err) {
-    console.error("getGalleryByCategory error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  getGalleryByCategory: async (req, res) => {
+    try {
+      const data = await HprProjectsModel.getGalleryByCategory(req.params.category);
+      res.json(data);
+    } catch (err) {
+      console.error("getGalleryByCategory error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
   // -------------------- HOME --------------------
-createHome: async (req, res) => {
-  try {
-    const { title, description } = req.body;
-    const project_id = parseInt(req.body.project_id, 10);
-    const brochure = req.files?.brochure?.[0]?.filename || null;
-    const image = req.files?.image?.[0]?.filename || null;
+  createHome: async (req, res) => {
+    try {
+      const { title, description, project_id, brochure_url, image_url } = req.body;
+      const id = await HprProjectsModel.createHome(parseInt(project_id), title, description, brochure_url || null, image_url || null);
+      res.status(201).json({ id });
+    } catch (err) {
+      console.error("createHome error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
-    const id = await HprProjectsModel.createHome(project_id, title, description, brochure, image);
-    res.status(201).json({ id });
-  } catch (err) {
-    console.error("createHome error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
+  getHomeByProjectId: async (req, res) => {
+    try {
+      const data = await HprProjectsModel.getHomeByProjectId(req.params.project_id);
+      res.json(data);
+    } catch (err) {
+      console.error("getHomeByProjectId error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
-getHomeByProjectId: async (req, res) => {
-  try {
-    const data = await HprProjectsModel.getHomeByProjectId(req.params.project_id);
-    res.json(data);
-  } catch (err) {
-    console.error("getHomeByProjectId error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
+  updateHome: async (req, res) => {
+    try {
+      const { title, description, brochure_url, image_url } = req.body;
+      await HprProjectsModel.updateHome(req.params.id, title, description, brochure_url || null, image_url || null);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("updateHome error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
-updateHome: async (req, res) => {
-  try {
-    const { title, description } = req.body;
-    const brochure = req.files?.brochure?.[0]?.filename || null;
-    const image = req.files?.image?.[0]?.filename || null;
-
-    await HprProjectsModel.updateHome(req.params.id, title, description, brochure, image);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("updateHome error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-deleteHome: async (req, res) => {
-  try {
-    await HprProjectsModel.deleteHome(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("deleteHome error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-
-  
+  deleteHome: async (req, res) => {
+    try {
+      await HprProjectsModel.deleteHome(req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("deleteHome error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
   // -------------------- GALLERY --------------------
-// -------------------- GALLERY --------------------
-// -------------------- GALLERY CONTROLLER --------------------
-addGalleryImage: async (req, res) => {
-  try {
-    const { project_id, work_date, description } = req.body;
-    const imageFilename = req.file?.filename || null;
+  addGalleryImage: async (req, res) => {
+    try {
+      const { project_id, work_date, description, image_url } = req.body;
 
-    // Fetch project category from DB
-    const project = await HprProjectsModel.getProjectById(project_id);
-    const category = project?.category || null;
+      const project = await HprProjectsModel.getProjectById(project_id);
+      const category = project?.category || null;
 
-    if (!project_id || !work_date || !description || !imageFilename || !category) {
-      return res.status(400).json({ success: false, message: "Missing required fields." });
+      if (!project_id || !work_date || !description || !image_url || !category) {
+        return res.status(400).json({ success: false, message: "Missing required fields." });
+      }
+
+      await HprProjectsModel.addGalleryImage(project_id, work_date, description, image_url, category);
+      res.status(201).json({ success: true });
+    } catch (err) {
+      console.error("addGalleryImage error:", err);
+      res.status(500).json({ message: "Server error while adding gallery image" });
     }
+  },
 
-    await HprProjectsModel.addGalleryImage(project_id, work_date, description, imageFilename, category);
-    res.status(201).json({ success: true, message: "Gallery image uploaded successfully" });
-  } catch (err) {
-    console.error("addGalleryImage error:", err);
-    res.status(500).json({ message: "Server error while adding gallery image" });
-  }
-},
-
-getGalleryByProjectId: async (req, res) => {
-  try {
-    const data = await HprProjectsModel.getGalleryByProjectId(req.params.project_id);
-    res.json(data);
-  } catch (err) {
-    console.error("getGalleryByProjectId error:", err);
-    res.status(500).json({ message: "Server error while fetching gallery data" });
-  }
-},
-
-deleteGalleryImage: async (req, res) => {
-  try {
-    await HprProjectsModel.deleteGalleryImage(req.params.id);
-    res.json({ success: true, message: "Gallery image deleted successfully" });
-  } catch (err) {
-    console.error("deleteGalleryImage error:", err);
-    res.status(500).json({ message: "Server error while deleting gallery image" });
-  }
-},
-
-
-// -------------------- PLAN --------------------
-addPlan: async (req, res) => {
-  try {
-    const { project_id, description } = req.body;
-    const planFilename = req.file?.filename ?? null;
-
-    if (!project_id || !description || !planFilename) {
-      return res.status(400).json({ success: false, message: "All fields (project_id, description, plan) are required." });
+  getGalleryByProjectId: async (req, res) => {
+    try {
+      const data = await HprProjectsModel.getGalleryByProjectId(req.params.project_id);
+      res.json(data);
+    } catch (err) {
+      console.error("getGalleryByProjectId error:", err);
+      res.status(500).json({ message: "Server error while fetching gallery data" });
     }
+  },
 
-    await HprProjectsModel.addPlan(project_id, description, planFilename);
-    res.status(201).json({ success: true });
-  } catch (err) {
-    console.error("addPlan error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-getPlanByProjectId: async (req, res) => {
-  try {
-    const projectId = req.params.project_id ?? null;
-    const data = await HprProjectsModel.getPlanByProjectId(projectId); // ✅ from model
-    res.json(data);
-  } catch (err) {
-    console.error("getPlanByProjectId error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-
-
-updatePlan: async (req, res) => {
-  try {
-    const { description } = req.body;
-    const planFilename = req.file?.filename ?? null;
-    const planId = req.params.id ?? null;
-
-    if (!planId || !description) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+  deleteGalleryImage: async (req, res) => {
+    try {
+      await HprProjectsModel.deleteGalleryImage(req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("deleteGalleryImage error:", err);
+      res.status(500).json({ message: "Server error while deleting gallery image" });
     }
+  },
 
-    await HprProjectsModel.updatePlan(planId, description, planFilename);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("updatePlan error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
+  // -------------------- PLAN --------------------
+  addPlan: async (req, res) => {
+    try {
+      const { project_id, description, plan_url } = req.body;
 
-deletePlan: async (req, res) => {
-  try {
-    const id = req.params.id ?? null;
-    await HprProjectsModel.deletePlan(id);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("deletePlan error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
+      if (!project_id || !description || !plan_url) {
+        return res.status(400).json({ success: false, message: "All fields (project_id, description, plan_url) are required." });
+      }
 
+      await HprProjectsModel.addPlan(project_id, description, plan_url);
+      res.status(201).json({ success: true });
+    } catch (err) {
+      console.error("addPlan error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+
+  getPlanByProjectId: async (req, res) => {
+    try {
+      const data = await HprProjectsModel.getPlanByProjectId(req.params.project_id);
+      res.json(data);
+    } catch (err) {
+      console.error("getPlanByProjectId error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+
+  updatePlan: async (req, res) => {
+    try {
+      const { description, plan_url } = req.body;
+      await HprProjectsModel.updatePlan(req.params.id, description, plan_url || null);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("updatePlan error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+
+  deletePlan: async (req, res) => {
+    try {
+      await HprProjectsModel.deletePlan(req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("deletePlan error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
   // -------------------- LOCATION --------------------
   addLocation: async (req, res) => {
@@ -272,26 +218,23 @@ deletePlan: async (req, res) => {
     }
   },
 
-getLocationByProjectId: async (req, res) => {
-  try {
-    const data = await HprProjectsModel.getLocationByProjectId(req.params.project_id);
-
-    const formatted = Array.isArray(data)
-      ? data.map((item) => ({
-          id: item.id,
-          project_id: item.project_id,
-          title: "Map Location", // ✅ Dummy title since it's not in DB
-          map_url: item.iframe_link, // ✅ Correctly map field
-        }))
-      : [];
-
-    res.json(formatted);
-  } catch (err) {
-    console.error("getLocationByProjectId error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
+  getLocationByProjectId: async (req, res) => {
+    try {
+      const data = await HprProjectsModel.getLocationByProjectId(req.params.project_id);
+      const formatted = Array.isArray(data)
+        ? data.map((item) => ({
+            id: item.id,
+            project_id: item.project_id,
+            title: "Map Location",
+            map_url: item.iframe_link,
+          }))
+        : [];
+      res.json(formatted);
+    } catch (err) {
+      console.error("getLocationByProjectId error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
   updateLocation: async (req, res) => {
     try {
@@ -314,67 +257,58 @@ getLocationByProjectId: async (req, res) => {
     }
   },
 
+  // -------------------- AMENITIES --------------------
+  addAmenities: async (req, res) => {
+    try {
+      const { project_id, infrastructure, features } = req.body;
+      await HprProjectsModel.addAmenities(project_id, infrastructure, features);
+      res.status(201).json({ success: true });
+    } catch (err) {
+      console.error("addAmenities error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
-// -------------------- AMENITIES --------------------
-addAmenities: async (req, res) => {
-  try {
-    const { project_id, infrastructure, features } = req.body;
+  getAmenitiesByProjectId: async (req, res) => {
+    try {
+      const data = await HprProjectsModel.getAmenitiesByProjectId(req.params.project_id);
+      res.json(data);
+    } catch (err) {
+      console.error("getAmenitiesByProjectId error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
-    // ✅ No need to JSON.parse — these are already objects
-    await HprProjectsModel.addAmenities(project_id, infrastructure, features);
+  updateAmenities: async (req, res) => {
+    try {
+      const { infrastructure, features } = req.body;
+      await HprProjectsModel.updateAmenities(req.params.id, infrastructure, features);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("updateAmenities error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
-    res.status(201).json({ success: true });
-  } catch (err) {
-    console.error("addAmenities error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
+  deleteAmenities: async (req, res) => {
+    try {
+      await HprProjectsModel.deleteAmenities(req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("deleteAmenities error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
-getAmenitiesByProjectId: async (req, res) => {
-  try {
-    const data = await HprProjectsModel.getAmenitiesByProjectId(req.params.project_id);
-    res.json(data);
-  } catch (err) {
-    console.error("getAmenitiesByProjectId error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-updateAmenities: async (req, res) => {
-  try {
-    const { infrastructure, features } = req.body;
-
-    // ✅ No parsing here either
-    await HprProjectsModel.updateAmenities(req.params.id, infrastructure, features);
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error("updateAmenities error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-deleteAmenities: async (req, res) => {
-  try {
-    await HprProjectsModel.deleteAmenities(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("deleteAmenities error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-getAmenitiesById: async (req, res) => {
-  try {
-    const data = await HprProjectsModel.getAmenitiesById(req.params.id);
-    res.json(data);
-  } catch (err) {
-    console.error("getAmenitiesById error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-},
-
-
+  getAmenitiesById: async (req, res) => {
+    try {
+      const data = await HprProjectsModel.getAmenitiesById(req.params.id);
+      res.json(data);
+    } catch (err) {
+      console.error("getAmenitiesById error:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
 
   // -------------------- CONTACT FORM --------------------
   submitContactForm: async (req, res) => {

@@ -16,19 +16,16 @@ const fetchProjects = async (req, res) => {
   }
 };
 
-// ✅ Create a new project
+// ✅ Create a new project (via image URL)
 const createProject = async (req, res) => {
-  const { title, description } = req.body;
-  const imageFilename = req.file ? req.file.filename : null;
+  const { title, description, image } = req.body;
 
-  console.log("[CREATE] Received:", {
-    title,
-    description,
-    fileExists: !!imageFilename
-  });
+  if (!title || !description || !image) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
 
   try {
-    const result = await addProject(title, description, imageFilename);
+    const result = await addProject(title, description, image);
     res.json({ success: true, message: "Project created successfully", id: result.insertId });
   } catch (error) {
     console.error("[CONTROLLER] Failed to create project:", error);
@@ -39,11 +36,14 @@ const createProject = async (req, res) => {
 // ✅ Edit project
 const editProject = async (req, res) => {
   const { id } = req.params;
-  const { title, description } = req.body;
-  const imageFilename = req.file ? req.file.filename : null;
+  const { title, description, image } = req.body;
+
+  if (!title || !description) {
+    return res.status(400).json({ success: false, message: "Title and description required" });
+  }
 
   try {
-    await updateProject(id, title, description, imageFilename);
+    await updateProject(id, title, description, image);
     res.json({ success: true, message: "Project updated successfully" });
   } catch (error) {
     console.error("[CONTROLLER] Failed to update project:", error);

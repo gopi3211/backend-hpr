@@ -2,22 +2,16 @@ const express = require("express");
 const router = express.Router();
 
 const NewsController = require("../controllers/news-controller");
-const upload = require("../middlewares/upload-middleware");
 
-const uploadFields = upload.fields([
-  { name: "images", maxCount: 10 },
-  { name: "banner", maxCount: 1 },
-]);
+// -------------------- BANNER ROUTES (MUST COME FIRST) --------------------
+router.get("/banner", NewsController.getBanner);          // ✅ FIX: placed before /:id
+router.post("/banner", NewsController.uploadBanner);
 
 // -------------------- NEWS CRUD --------------------
-router.post("/", uploadFields, NewsController.createNews);
+router.post("/", NewsController.createNews);
 router.get("/", NewsController.getAllNews);
-router.get("/:id", NewsController.getNewsById);
+router.get("/:id", NewsController.getNewsById);           // ✅ this should be last among GETs
 router.put("/:id", NewsController.updateNews);
 router.delete("/:id", NewsController.deleteNews);
-
-// -------------------- BANNER --------------------
-router.post("/banner", uploadFields, NewsController.uploadBanner);
-router.get("/banner", NewsController.getBanner); // ✅ MISSING GET FIXED
 
 module.exports = router;
